@@ -7,27 +7,28 @@ RUN sudo apt-get install -y libreadline-dev build-essential zlib1g-dev
 
 RUN cd /tmp && wget http://ftp.postgresql.org/pub/source/v9.4.4/postgresql-9.4.4.tar.bz2
 RUN cd /tmp && tar xf postgresql-9.4.4.tar.bz2
+
+# Build postgres
 RUN cd /tmp/postgresql-9.4.4 && \
   ./configure && \
   make && \
   make install
+
+# Add trgm module
 RUN cd /tmp/postgresql-9.4.4/contrib/pg_trgm && \
   sed -i 's;^\(\s*#define\s*KEEPONLYALNUM.*\)$;/* \1 */;' trgm.h && \
   make && \
   make install
+
 RUN rm -r /tmp/postgresql-9.4.4
 RUN useradd --shell /bin/false -d /var/home postgres
+
 # Define mountable directories.
 RUN mkdir -p /var/pgsql/data
 RUN chown -R postgres:postgres /var/pgsql
 
 VOLUME ["/var/pgsql"]
 EXPOSE 5432
-
-ADD profile /profile
-ADD initdb.sh /initdb.sh
-
-RUN chmod +x /initdb.sh
 
 USER postgres
 
